@@ -11,15 +11,22 @@ Feel free to submit pull requests with any modifications you see fit. Most of th
 
 # Table of Contents
 <details>
-<summary>Loading and Working with Binary Targets</summary>
+<summary>Working with Binary Targets</summary>
 
 * [`Loading a binary`](#loading-a-binary)
 * [`Getting basic information from a BinaryView`](#getting-basic-information-from-a-binaryview)
 
 </details>
 
+<details>
 
-## Loading and Working with Binary Targets
+<summary>Working with Functions</summary>
+
+* [`Listing all functions`](#listing-all-functions)
+
+</details>
+
+## Working with Binary Targets
 In this section we'll cover common methods for loading binary targets and getting information about the target.
 
 ### Loading a binary
@@ -70,11 +77,45 @@ with binaryninja.open_view("/bin/true") as bv:
 Binary name:     true
 Number of funcs: 106
 Endianness:      LittleEndian
-entry function:  int64_t _start(int64_t arg1, int64_t arg2, void (* arg3)()) __noreturn
-entry point:     0x004017B0
-executable:      True
+Entry function:  int64_t _start(int64_t arg1, int64_t arg2, void (* arg3)()) __noreturn
+Entry point:     0x004017B0
+Executable:      True
 Address size:    8
 Arch:            <arch: x86_64>
+```
+</details>
+
+<br>[⬆ Back to top](#table-of-contents)
+
+
+## Working with functions
+In this section we'll work with functions including listing them, finding cross references to them, finding call targets, etc.
+
+### Listing all functions
+Once you have a BinaryView, getting function information is extremely easy, just reference the `.function` attribute to get a list of all functions in the target binary.
+
+```python
+with binaryninja.open_view("/bin/true") as bv:
+    funcs = bv.functions
+    print("Function count: {}".format(len(funcs)))
+    for func in funcs:
+        print("0x{:X}: {}".format(func.start, func.name))
+```
+
+<details>
+<summary>Output example</summary>
+
+```
+Function count: 106
+0x4013D0: _init
+0x401400: __uflow
+0x401406: sub_401406
+0x401410: getenv
+0x401420: free
+0x401430: abort
+0x401440: __errno_location
+0x401450: strncmp
+...snip...
 ```
 </details>
 
