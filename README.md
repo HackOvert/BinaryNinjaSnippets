@@ -28,7 +28,7 @@ Binary Ninja uses a [BinaryView](https://api.binary.ninja/binaryninja.binaryview
 ```python
 # Method 1
 with binaryninja.open_view("/bin/true") as bv:
-	print(type(bv))
+    print(type(bv))
 
 # Method 2: Using this method, you must close the binary view yourself when done with it
 bv = binaryninja.BinaryViewType.get_view_of_file_with_options("/bin/true")
