@@ -23,6 +23,8 @@ Feel free to submit pull requests with any modifications you see fit. Most of th
 <summary>Working with Functions</summary>
 
 * [`Listing all functions`](#listing-all-functions)
+* [`Getting calll site details`](#getting-call-site-details)
+* [`Finding callers for a function`](#finding-callers-for-a-function)
 
 </details>
 
@@ -116,6 +118,87 @@ Function count: 106
 0x401440: __errno_location
 0x401450: strncmp
 ...snip...
+```
+</details>
+
+<br>[⬆ Back to top](#table-of-contents)
+
+### Getting call site details
+When analyzing a function you may want to know if it calls other functions, some details such as: 
+* At what address does the call happen?
+* What function is called (callee)?
+* Is the callee an external (imported) function?
+
+You can quickly and easily get this information and more. Let's take a look at how to do it.
+
+```python
+with binaryninja.open_view("/bin/true") as bv:
+    funcs = bv.functions
+    for func in funcs:
+        call_sites = func.call_sites
+        callees = func.callees
+        print("\nFunction {} calls {} function(s).".format(func.name, len(callees)))
+        for i, callee in enumerate(callees):
+            symbol_type = callee.symbol.type.name
+            print("  Callee {}: Call site @ {}, calls function {} which is a {}.".format(i+1, call_sites[i], callees[i].name, symbol_type))
+```
+
+<details>
+<summary>Output example</summary>
+
+```
+...snip...
+Function sub_404860 calls 8 function(s).
+  Callee 1: Call site @ <ref: x86_64@0x404867>, calls function fileno which is a ImportedFunctionSymbol.
+  Callee 2: Call site @ <ref: x86_64@0x404873>, calls function __freading which is a ImportedFunctionSymbol.
+  Callee 3: Call site @ <ref: x86_64@0x40487f>, calls function sub_4048e0 which is a FunctionSymbol.
+  Callee 4: Call site @ <ref: x86_64@0x404888>, calls function __errno_location which is a ImportedFunctionSymbol.
+  Callee 5: Call site @ <ref: x86_64@0x404896>, calls function fclose which is a ImportedFunctionSymbol.
+  Callee 6: Call site @ <ref: x86_64@0x4048ab>, calls function fileno which is a ImportedFunctionSymbol.
+  Callee 7: Call site @ <ref: x86_64@0x4048b9>, calls function lseek which is a ImportedFunctionSymbol.
+  Callee 8: Call site @ <ref: x86_64@0x4048cb>, calls function fclose which is a ImportedFunctionSymbol.
+
+Function sub_4048e0 calls 4 function(s).
+  Callee 1: Call site @ <ref: x86_64@0x4048e9>, calls function __freading which is a ImportedFunctionSymbol.
+  Callee 2: Call site @ <ref: x86_64@0x4048fe>, calls function fflush which is a ImportedFunctionSymbol.
+  Callee 3: Call site @ <ref: x86_64@0x404912>, calls function sub_404920 which is a FunctionSymbol.
+  Callee 4: Call site @ <ref: x86_64@0x40491b>, calls function fflush which is a ImportedFunctionSymbol.
+...snip...
+```
+</details>
+
+<br>[⬆ Back to top](#table-of-contents)
+
+### Finding callers for a function
+When analyzing a function you may want to know where that function is called from. Binary Ninja makes this easy for resolvable calls. In cases where calls are dynamic, more work may be needed to recover this information.
+
+```python
+with binaryninja.open_view("/bin/true") as bv:
+    funcs = bv.functions
+    for func in funcs:
+        callers = func.callers
+        print("\nFunction {} is called from {} known locations.".format(func.name, len(callers)))
+        for i, caller in enumerate(callers):
+            print("  Caller {}: {} is called from function {}.".format(i+1, func.name, caller.name))
+```
+
+<details>
+<summary>Output example</summary>
+
+```
+...snip...
+Function sub_404210 is called from 2 known locations.
+  Caller 1: sub_404210 is called from function sub_404240.
+  Caller 2: sub_404210 is called from function sub_403250.
+
+Function sub_404240 is called from 0 known locations.
+
+Function sub_404260 is called from 4 known locations.
+  Caller 1: sub_404260 is called from function sub_404070.
+  Caller 2: sub_404260 is called from function sub_4030a0.
+  Caller 3: sub_404260 is called from function sub_404010.
+  Caller 4: sub_404260 is called from function sub_4041e0.
+  ...snip...
 ```
 </details>
 
