@@ -1,9 +1,16 @@
 # Binary Ninja Snippets
-*Binary Ninja Snippets* is a collection of Python examples showing how to work with [Binary Ninja][0]'s Python API. Many of the examples here focus on using the Binary Ninja Intermediate Language (BNIL) suite which includes LLIL, MLIL, HLIL along with [SSA](https://en.wikipedia.org/wiki/Static_single_assignment_form) versions of each.
+*Binary Ninja Snippets* is a collection of Python examples showing how to work with [Binary Ninja][0]'s [Python API][1]. Many of the examples here focus on using the Binary Ninja Intermediate Language (BNIL) suite which includes LLIL, MLIL, HLIL along with [SSA](https://en.wikipedia.org/wiki/Static_single_assignment_form) versions of each.
 
 # Latest Release & API Docs
 * Interested in Binary Ninja? [Check it out here][0].
-* Looking for the latest Python API Docs? [View them here][1].
+* Looking for the latest Python API docs? [View them here][1].
+* Looking for user docs? [View them here][5].
+
+# Community
+* Follow Vector 35 on [Twitter][2].
+* Read the Binary Ninja [Blog][3].
+* Join the public [Slack][4].
+* Check out Vector 35 on [YouTube][6].
 
 # Contributing
 
@@ -25,6 +32,7 @@ Feel free to submit pull requests with any modifications you see fit. Most of th
 * [`Listing all functions`](#listing-all-functions)
 * [`Getting calll site details`](#getting-call-site-details)
 * [`Finding callers for a function`](#finding-callers-for-a-function)
+* [`Get functions by name`](#get-functions-by-name)
 
 </details>
 
@@ -205,5 +213,82 @@ Function sub_404260 is called from 4 known locations.
 <br>[⬆ Back to top](#table-of-contents)
 
 
+### Get functions by name
+Getting a function object by name sounds like a simple process, but once you consider function overloading (i.e. multiple functions can share the same name), mangled names, and playform-specific qualified names, things start to get complex.
+
+In its most simple form, you can loop over `bv.functions` checking the `name` member for the value you want:
+```python
+# You probably don't want to do this!
+for function in bv.functions:
+  if function.name == "continuePlaying":
+    return function
+```
+
+This falls apart when you start analyzing complex C++ targets. For example, there may be numerous functions named "continuePlaying", and the above code will only return one. What happens if you want to find a function by it's mangled name or qualified name? Because of this, we'll go for a more encompasing solution.
+
+```python
+def get_functions_by_name(bv, fname):
+    functions = []
+    for function in bv.functions:
+        if function.name == fname:
+            functions.append(function)
+        else:
+            type_gnu3, name_gnu3 = binaryninja.demangle_gnu3(bv.arch, function.name)
+            if type_gnu3 != None and type(name_gnu3) == list and len(name_gnu3) == 2:
+                gnu3_fn = name_gnu3[1]
+                gnu3_qn = binaryninja.get_qualified_name(name_gnu3)
+                if gnu3_fn == fname or gnu3_qn == fname:
+                    functions.append(function)
+                    continue
+            type_ms, name_ms = binaryninja.demangle_ms(bv.arch, function.name)
+            if type_ms != None and type(name_ms) == list and len(name_ms) == 2:
+                ms_fn = name_ms[1]
+                ms_qn = binaryninja.get_qualified_name(name_ms)
+                if ms_fn == fname or ms_qn == fname:
+                    functions.append(function)
+    return functions
+```
+
+<details>
+<summary>Output example</summary>
+
+```
+# Use case 1
+# Using this function on a libvlc.dll target to find
+# functions named "continuePlaying".
+# get_functions_by_name(bv, "continuePlaying")
+
+int32_t _ZN8FileSink15continuePlayingEv(void* arg1)
+int32_t _ZN12BasicUDPSink15continuePlayingEv(void* arg1)
+int32_t _ZN8HTTPSink15continuePlayingEv(void* arg1)
+int32_t _ZN16H264VideoRTPSink15continuePlayingEv(int32_t* arg1)
+int32_t _ZN18MultiFramedRTPSink15continuePlayingEv(int32_t* arg1)
+int32_t _ZN9DummySink15continuePlayingEv(void* arg1)
+int32_t _ZN17QuickTimeFileSink15continuePlayingEv(void* arg1)
+int32_t _ZN11AVIFileSink15continuePlayingEv(void* arg1)
+
+# Use case 2
+# Using this function on a libvlc.dll target to find
+# functions named "_ZN9DummySink15continuePlayingEv" (mangled)
+
+int32_t _ZN9DummySink15continuePlayingEv(void* arg1)
+
+# Use case 3
+# Using this function on a libvlc.dll target to find
+# functions named "AVIFileSink::continuePlaying" (qualified name)
+
+int32_t _ZN11AVIFileSink15continuePlayingEv(void* arg1)
+
+```
+</details>
+
+<br>[⬆ Back to top](#table-of-contents)
+
+
 [0]: https://binary.ninja/
 [1]: https://api.binary.ninja/
+[2]: https://twitter.com/vector35
+[3]: https://binary.ninja/blog/
+[4]: https://slack.binary.ninja/
+[5]: https://docs.binary.ninja/
+[6]: https://www.youtube.com/channel/UCtIKC7NSj7l9zcHomQS1fBA
