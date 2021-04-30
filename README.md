@@ -214,7 +214,7 @@ Function sub_404260 is called from 4 known locations.
 
 
 ### Get functions by name
-Getting a function object by name sounds like a simple process, but once you consider function overloading (i.e. multiple functions can share the same name), mangled names, and playform-specific qualified names, things start to get complex.
+Getting a function object by name sounds like a simple process, but once you consider function overloading (i.e. multiple functions can share the same name), mangled names, and platform-specific qualified names, things start to get complex.
 
 In its most simple form, you can loop over `bv.functions` checking the `name` member for the value you want:
 ```python
