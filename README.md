@@ -34,7 +34,7 @@ Feel free to submit pull requests with any modifications you see fit. Most of th
 <summary>Working with Functions</summary>
 
 - [`Listing all functions`](#listing-all-functions)
-- [`Getting calll site details`](#getting-call-site-details)
+- [`Getting call site details`](#getting-call-site-details)
 - [`Finding callers for a function`](#finding-callers-for-a-function)
 - [`Finding callees for a function`](#finding-callees-for-a-function)
 - [`Get functions by name`](#get-functions-by-name)
