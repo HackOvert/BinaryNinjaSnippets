@@ -161,7 +161,7 @@ with binaryninja.open_view("/bin/true") as bv:
         print("\nFunction {} calls {} function(s).".format(func.name, len(callees)))
         for i, callee in enumerate(callees):
             symbol_type = callee.symbol.type.name
-            print("  Callee {}: Call site @ {}, calls function {} which is a {}.".format(i+1, call_sites[i], callees[i].name, symbol_type))
+            print("  Callee {}: Call site @ {}, calls function {} which is a {}.".format(i+1, hex(call_sites[i].address), callees[i].name, symbol_type))
 ```
 
 <details>
@@ -170,20 +170,20 @@ with binaryninja.open_view("/bin/true") as bv:
 ```
 ...snip...
 Function sub_404860 calls 8 function(s).
-  Callee 1: Call site @ <ref: x86_64@0x404867>, calls function fileno which is a ImportedFunctionSymbol.
-  Callee 2: Call site @ <ref: x86_64@0x404873>, calls function __freading which is a ImportedFunctionSymbol.
-  Callee 3: Call site @ <ref: x86_64@0x40487f>, calls function sub_4048e0 which is a FunctionSymbol.
-  Callee 4: Call site @ <ref: x86_64@0x404888>, calls function __errno_location which is a ImportedFunctionSymbol.
-  Callee 5: Call site @ <ref: x86_64@0x404896>, calls function fclose which is a ImportedFunctionSymbol.
-  Callee 6: Call site @ <ref: x86_64@0x4048ab>, calls function fileno which is a ImportedFunctionSymbol.
-  Callee 7: Call site @ <ref: x86_64@0x4048b9>, calls function lseek which is a ImportedFunctionSymbol.
-  Callee 8: Call site @ <ref: x86_64@0x4048cb>, calls function fclose which is a ImportedFunctionSymbol.
+  Callee 1: Call site @ 0x404867, calls function fileno which is a ImportedFunctionSymbol.
+  Callee 2: Call site @ 0x404873, calls function __freading which is a ImportedFunctionSymbol.
+  Callee 3: Call site @ 0x40487f, calls function sub_4048e0 which is a FunctionSymbol.
+  Callee 4: Call site @ 0x404888, calls function __errno_location which is a ImportedFunctionSymbol.
+  Callee 5: Call site @ 0x404896, calls function fclose which is a ImportedFunctionSymbol.
+  Callee 6: Call site @ 0x4048ab, calls function fileno which is a ImportedFunctionSymbol.
+  Callee 7: Call site @ 0x4048b9, calls function lseek which is a ImportedFunctionSymbol.
+  Callee 8: Call site @ 0x4048cb, calls function fclose which is a ImportedFunctionSymbol.
 
 Function sub_4048e0 calls 4 function(s).
-  Callee 1: Call site @ <ref: x86_64@0x4048e9>, calls function __freading which is a ImportedFunctionSymbol.
-  Callee 2: Call site @ <ref: x86_64@0x4048fe>, calls function fflush which is a ImportedFunctionSymbol.
-  Callee 3: Call site @ <ref: x86_64@0x404912>, calls function sub_404920 which is a FunctionSymbol.
-  Callee 4: Call site @ <ref: x86_64@0x40491b>, calls function fflush which is a ImportedFunctionSymbol.
+  Callee 1: Call site @ 0x4048e9, calls function __freading which is a ImportedFunctionSymbol.
+  Callee 2: Call site @ 0x4048fe, calls function fflush which is a ImportedFunctionSymbol.
+  Callee 3: Call site @ 0x404912, calls function sub_404920 which is a FunctionSymbol.
+  Callee 4: Call site @ 0x40491b, calls function fflush which is a ImportedFunctionSymbol.
 ...snip...
 ```
 
@@ -288,7 +288,7 @@ Function sub_48e0 calls 4 function(s).
 ...snip...
 ```
 
-Let's break this down. First, at the "native level" we collect the call sites and callees. When we print this information, there is no such thing as an instruction index as the native level so it appears as "N/A". When we convert this native call site to LLIL and MLIL it works every time, telling us at what instruction and instruction index the call is made. However, HLIL is another story as it will sometimes fail to convert a call site to a HLIL location, resulting in a "HLIL_COP" instruction with an index of `18446744073709551615` (or `0xffffffffffffffff`).
+Let's break this down. First, at the "native level" we collect the call sites and callees. When we print this information, there is no such thing as an instruction index at the native level so it appears as "N/A". When we convert this native call site to LLIL and MLIL it works every time, telling us at what instruction and instruction index the call is made. However, HLIL is another story as it will sometimes fail to convert a call site to a HLIL location, resulting in a "HLIL_COP" instruction with an index of `18446744073709551615` (or `0xffffffffffffffff`).
 
 In other words, there is no concise way to get call sites in HLIL. It works much of the time, but fails seemingly randomly.
 
